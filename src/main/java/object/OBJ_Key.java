@@ -1,17 +1,20 @@
 package object;
 
+import entity.Entity;
+import org.example.Main.GamePanel;
+
 import javax.imageio.ImageIO;
 import java.io.IOException;
 
-public class OBJ_Key extends SuperObject{
+public class OBJ_Key extends Entity {
 
-    public OBJ_Key(){
+    public OBJ_Key(GamePanel gp){
+        super(gp);
+        type = type_consumable;
         name = "Key";
-        try{
-            image = ImageIO.read(getClass().getResourceAsStream("/objects/key.png"));
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
+        down1 = setup("/objects/key",gp.tileSize,gp.tileSize);
+        description = "[" + name + "]\nMay open a door";
+        price = 50;
+
     }
 }
