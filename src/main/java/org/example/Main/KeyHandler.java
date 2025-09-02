@@ -5,7 +5,7 @@ import java.awt.event.KeyListener;
 import java.security.Key;
 
 public class KeyHandler implements KeyListener {
-    public boolean upPressed, downPressed, leftPressed, rightPressed,enterPressed,shotKeyPressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed,enterPressed,shotKeyPressed,guardPressed;
     GamePanel gp;
     ///debug
     boolean showDebugText = false;
@@ -53,6 +53,10 @@ public class KeyHandler implements KeyListener {
         else if(gp.gameState == gp.tradeState){
             tradeState(code);
         }
+        ///map
+        else if(gp.gameState == gp.mapState){
+            mapState(code);
+        }
     }
     public void titleState(int code){
         if(gp.ui.titleScreenState == 0){
@@ -74,7 +78,8 @@ public class KeyHandler implements KeyListener {
                     //gp.playMusic(0);
                 }
                 if(gp.ui.commandNumber == 1){
-                    ///later
+                    gp.saveLoad.load();
+                    gp.gameState = gp.playState;
                 }
                 if(gp.ui.commandNumber == 2){
                     System.exit(0);
@@ -143,6 +148,12 @@ public class KeyHandler implements KeyListener {
         }
         if(code == KeyEvent.VK_ESCAPE){
             gp.gameState = gp.optionsState;
+        }
+        if(code == KeyEvent.VK_M){
+            gp.gameState = gp.mapState;
+        }
+        if(code == KeyEvent.VK_L){
+            guardPressed = true;
         }
         ///debug
         if(code == KeyEvent.VK_T){
@@ -256,13 +267,13 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_ENTER){
             if(gp.ui.commandNumber == 0){
                 gp.gameState = gp.playState;
-                gp.retry();
+                gp.resetGame(false);
                 gp.playMusic(0);
             }
             else if(gp.ui.commandNumber == 1){
                 gp.ui.titleScreenState = 0;
                 gp.gameState = gp.titleState;
-                gp.restart();
+                gp.resetGame(true);
             }
         }
     }
@@ -297,6 +308,11 @@ public class KeyHandler implements KeyListener {
             if(code == KeyEvent.VK_ESCAPE){
                 gp.ui.subState = 0;
             }
+        }
+    }
+    public void mapState(int code){
+        if(code == KeyEvent.VK_M || code == KeyEvent.VK_ESCAPE){
+            gp.gameState = gp.playState;
         }
     }
     public void playerInventory(int code){
@@ -368,6 +384,12 @@ public class KeyHandler implements KeyListener {
         }
         if(code == KeyEvent.VK_K){
             shotKeyPressed = false;
+        }
+        if(code == KeyEvent.VK_ENTER){
+            enterPressed = false;
+        }
+        if(code == KeyEvent.VK_L){
+            guardPressed = false;
         }
     }
 }

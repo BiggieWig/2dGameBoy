@@ -316,7 +316,7 @@ public class UI {
         textY += lineHeight;
         g2.drawString("Mana",textX,textY);
         textY += lineHeight;
-        g2.drawString("Strenght",textX,textY);
+        g2.drawString("Strength",textX,textY);
         textY += lineHeight;
         g2.drawString("Dexterity",textX,textY);
         textY += lineHeight;
@@ -355,7 +355,7 @@ public class UI {
         g2.drawString(value,textX,textY);
         textY += lineHeight;
 
-        value = String.valueOf(gp.player.strenght);
+        value = String.valueOf(gp.player.strength);
         textX = getXforAllignToRightText(value,tailX);
         g2.drawString(value,textX,textY);
         textY += lineHeight;
@@ -430,12 +430,30 @@ public class UI {
         ///draw player items
         for(int i = 0; i < entity.inventory.size(); i++){
             if(entity.inventory.get(i) == entity.currentWeapon ||
-                    entity.inventory.get(i) == entity.currentShield){
+                    entity.inventory.get(i) == entity.currentShield ||
+                    entity.inventory.get(i) == entity.currentLight){
                 g2.setColor(new Color(240,190,90));
                 g2.fillRoundRect(slotX,slotY,slotSize,slotSize,10,10);
             }
 
             g2.drawImage(entity.inventory.get(i).down1, slotX,slotY,null);
+            ///display amount
+            if(entity == gp.player && entity.inventory.get(i).amount > 1){
+                g2.setFont(g2.getFont().deriveFont(32f));
+                int amountX;
+                int amountY;
+                String s = "" + entity.inventory.get(i).amount;
+                amountX = getXforAllignToRightText(s,slotX + 44);
+                amountY = slotY + gp.tileSize;
+
+                ///shadow
+                g2.setColor(new Color(60,60,60));
+                g2.drawString(s,amountX,amountY);
+                ///number
+                g2.setColor(Color.white);
+                g2.drawString(s,amountX - 3, amountY - 3);
+            }
+
             slotX += slotSize;
             if((i + 1) % 5 == 0){
                 slotX = slotXstart;
@@ -649,6 +667,7 @@ public class UI {
         g2.drawString("Character Screen",textX,textY);textY += gp.tileSize;
         g2.drawString("Pause",textX,textY);textY += gp.tileSize;
         g2.drawString("Options",textX,textY);textY += gp.tileSize;
+        g2.drawString("Open Map",textX,textY);textY += gp.tileSize;
 
         textX = frameX + gp.tileSize*6;
         textY = frameY + gp.tileSize*2;
@@ -658,6 +677,7 @@ public class UI {
         g2.drawString("C",textX,textY);textY += gp.tileSize;
         g2.drawString("P",textX,textY);textY += gp.tileSize;
         g2.drawString("ESC",textX,textY);textY += gp.tileSize;
+        g2.drawString("M",textX,textY);textY += gp.tileSize;
 
         ///BACK
         textX = frameX + gp.tileSize;
@@ -692,6 +712,7 @@ public class UI {
                 subState = 0;
                 titleScreenState = 0;
                 gp.gameState = gp.titleState;
+                gp.resetGame(true);
                 gp.stopMusic();
             }
         }
@@ -808,14 +829,15 @@ public class UI {
                     currentDialogue = "Get your broke ass out of here\nGo find some coins if you want to buy!";
                     drawDialogueScreen();
                 }
-                else if(gp.player.inventory.size() == gp.player.inventorySize){
-                    subState = 0;
-                    gp.gameState = gp.dialogueState;
-                    currentDialogue = "Your inventory is full!";
-                }
                 else{
-                    gp.player.coin -= npc.inventory.get(itemIndex).price;
-                    gp.player.inventory.add(npc.inventory.get(itemIndex));
+                    if(gp.player.canObtainItem(npc.inventory.get(itemIndex)) == true){
+                        gp.player.coin -= npc.inventory.get(itemIndex).price;
+                    }
+                    else{
+                        subState = 0;
+                        gp.gameState = gp.dialogueState;
+                        currentDialogue = "Your inventory is full!";
+                    }
                 }
             }
         }
@@ -861,7 +883,12 @@ public class UI {
                     currentDialogue = "You cant't sell an equiped item dummy!";
                 }
                 else{
-                    gp.player.inventory.remove(itemIndex);
+                    if(gp.player.inventory.get(itemIndex).amount > 1){
+                        gp.player.inventory.get(itemIndex).amount--;
+                    }
+                    else{
+                        gp.player.inventory.remove(itemIndex);
+                    }
                     gp.player.coin += price;
                 }
             }

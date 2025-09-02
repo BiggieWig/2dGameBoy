@@ -1,7 +1,10 @@
 package org.example.Main;
 import ai.PathFinder;
+import data.SaveLoad;
 import entity.Entity;
 import entity.Player;
+import environment.EnvironmentManger;
+import tile.Map;
 import tile.TileManager;
 import tile_interactive.InteractiveTile;
 
@@ -44,9 +47,12 @@ public class GamePanel extends JPanel implements Runnable {
     public UI ui = new UI(this);
     public EventHandler eHandler = new EventHandler(this);
     public PathFinder pFinder = new PathFinder(this);
+    EnvironmentManger eManager = new EnvironmentManger(this);
+    Map map = new Map(this);
+    SaveLoad saveLoad = new SaveLoad(this);
     ///World settings
-    public final int maxWorldCol = 50;
-    public final int maxWorldRow = 50;
+    public  int maxWorldCol;
+    public  int maxWorldRow;
     public final int worldWidth = maxWorldCol * tileSize;
     public final int worldHeight = maxWorldRow * tileSize;
     public int currentMap = 0;
@@ -73,6 +79,7 @@ public class GamePanel extends JPanel implements Runnable {
     public final int gameOverState = 6;
     public final int transitionState = 7;
     public final int tradeState = 8;
+    public final int mapState = 9;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -87,6 +94,7 @@ public class GamePanel extends JPanel implements Runnable {
         aSetter.setNPC();
         aSetter.setMonster();
         aSetter.setInteractiveTile();
+        eManager.setup();
         gameState = titleState;
 
         tempScreen = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB);
@@ -97,20 +105,17 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
     }
-    public void retry(){
+    public void resetGame(boolean restart){
         player.setDefaultPositions();
-        player.restoreLifeAndMana();
-        aSetter.setNPC();
+        player.restoreStatus();
         aSetter.setMonster();
 
-    }
-    public void restart(){
-        player.setDefaultValues();
-        player.setItems();
-        aSetter.setObject();
-        aSetter.setNPC();
-        aSetter.setMonster();
-        aSetter.setInteractiveTile();
+        if(restart) {
+            player.setDefaultValues();
+            aSetter.setObject();
+            aSetter.setInteractiveTile();
+            eManager.lighting.resetDay();
+        }
     }
     public void setFullScreen(){
         ///get monitor screen info
@@ -209,6 +214,7 @@ public class GamePanel extends JPanel implements Runnable {
                    }
                }
            }
+           eManager.update();
 
        }
        if(gameState == pauseState) {
@@ -224,6 +230,10 @@ public class GamePanel extends JPanel implements Runnable {
         ///title screen
         if(gameState == titleState) {
             ui.draw(g2);
+        }
+        ///map screen
+        else if(gameState == mapState) {
+            map.drawFullMapScreen(g2);
         }
         ///others
         else{
@@ -277,6 +287,8 @@ public class GamePanel extends JPanel implements Runnable {
             }
             ///empty list
             entityList.clear();
+            ///environment
+            eManager.draw(g2);
             ///ui
             ui.draw(g2);
         }
