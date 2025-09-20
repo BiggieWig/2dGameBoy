@@ -3,19 +3,16 @@ package object;
 import entity.Entity;
 import org.example.Main.GamePanel;
 
-import javax.imageio.ImageIO;
-import java.io.IOException;
-
-public class OBJ_Door extends Entity {
+public class OBJ_Door_Iron extends Entity {
     GamePanel gp;
-    public static final String objName = "Door";
-    public OBJ_Door(GamePanel gp){
+    public static final String objName = "Iron Door";
+    public OBJ_Door_Iron(GamePanel gp){
         super(gp);
         this.gp = gp;
 
         type = type_obstacle;
         name = objName;
-        down1 = setup("/objects/door",gp.tileSize,gp.tileSize);
+        down1 = setup("/objects/door_iron",gp.tileSize,gp.tileSize);
         collision = true;
 
         solidArea.x = 0;
@@ -28,7 +25,7 @@ public class OBJ_Door extends Entity {
         setDialogue();
     }
     public void setDialogue(){
-        dialogues[0][0] =  "You need a key to open this";
+        dialogues[0][0] =  "It won't budge.";
     }
     public void interact(){
         startDialogue(this,0);

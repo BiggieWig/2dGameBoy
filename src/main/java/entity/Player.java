@@ -45,9 +45,9 @@ public class Player extends Entity {
         speed = defaultSpeed;
         ///player status
         level = 1;
-        maxLife = 6;
+        maxLife = 8;
         life = maxLife;
-        maxMana = 4;
+        maxMana = 5;
         mana = maxMana;
         ammo = 5;
         strength = 1;
@@ -68,13 +68,19 @@ public class Player extends Entity {
         setItems();
     }
     public void setDefaultPositions(){
+        gp.currentMap = 0;
         worldX = gp.tileSize * 23;
         worldY = gp.tileSize * 21;
+
         direction = "down";
+    }
+    public void setDialogue(){
+        dialogues[0][0] = "You are level " + level + " now!\nYou even feel stronger" ;
     }
     public void restoreStatus(){
         life = maxLife;
         mana = maxMana;
+        speed = defaultSpeed;
         invincible = false;
         transparent = false;
         attacking = false;
@@ -89,6 +95,7 @@ public class Player extends Entity {
         inventory.add(currentShield);
         inventory.add(new OBJ_Axe(gp));
         inventory.add(new OBJ_Key(gp));
+        inventory.add(new OBJ_Lantern(gp));
     }
     public int getAttack(){
         attackArea = currentWeapon.attackArea;
@@ -99,8 +106,25 @@ public class Player extends Entity {
     public int getDefense(){
         return defense = dexterity*currentShield.defenseValue;
     }
+    public int getCurrentWeaponSlot(){
+        int currentWeaponSlot = 0;
+        for(int i = 0; i < inventory.size(); i++){
+            if(inventory.get(i) == currentWeapon){
+                currentWeaponSlot = i;
+            }
+        }
+        return currentWeaponSlot;
+    }
+    public int getCurrentShieldSlot(){
+        int currentShieldSlot = 0;
+        for(int i = 0; i < inventory.size(); i++){
+            if(inventory.get(i) == currentShield){
+                currentShieldSlot = i;
+            }
+        }
+        return currentShieldSlot;
+    }
     public void getImage() {
-
         up1 = setup("/player/boy_up_1",gp.tileSize,gp.tileSize);
         up2 = setup("/player/boy_up_2",gp.tileSize,gp.tileSize);
         down1 = setup("/player/boy_down_1",gp.tileSize,gp.tileSize);
@@ -132,6 +156,16 @@ public class Player extends Entity {
             attackLeft2 = setup("/player/boy_axe_left_2", gp.tileSize * 2, gp.tileSize);
             attackRight1 = setup("/player/boy_axe_right_1", gp.tileSize * 2, gp.tileSize);
             attackRight2 = setup("/player/boy_axe_right_2", gp.tileSize * 2, gp.tileSize);
+        }
+        if(currentWeapon.type == type_pickaxe){
+            attackUp1 = setup("/player/boy_pick_up_1", gp.tileSize, gp.tileSize * 2);
+            attackUp2 = setup("/player/boy_pick_up_2", gp.tileSize, gp.tileSize * 2);
+            attackDown1 = setup("/player/boy_pick_down_1", gp.tileSize, gp.tileSize * 2);
+            attackDown2 = setup("/player/boy_pick_down_2", gp.tileSize, gp.tileSize * 2);
+            attackLeft1 = setup("/player/boy_pick_left_1", gp.tileSize * 2, gp.tileSize);
+            attackLeft2 = setup("/player/boy_pick_left_2", gp.tileSize * 2, gp.tileSize);
+            attackRight1 = setup("/player/boy_pick_right_1", gp.tileSize * 2, gp.tileSize);
+            attackRight2 = setup("/player/boy_pick_right_2", gp.tileSize * 2, gp.tileSize);
         }
     }
     public void getGuardingImage(){
@@ -290,11 +324,13 @@ public class Player extends Entity {
         if(mana > maxMana){
             mana = maxMana;
         }
-        if(life <= 0){
-            gp.gameState = gp.gameOverState;
-            gp.stopMusic();
-            gp.ui.commandNumber = -1;
-            gp.playSE(12);
+        if(keyH.godModeOn == false) {
+            if (life <= 0) {
+                gp.gameState = gp.gameOverState;
+                gp.stopMusic();
+                gp.ui.commandNumber = -1;
+                gp.playSE(12);
+            }
         }
     }
     public void pickUpObject(int i) {
@@ -327,14 +363,14 @@ public class Player extends Entity {
     }
 
     public void interactNPC(int i) {
-        if(gp.keyH.enterPressed == true){
-            if (i != 999) {
+
+        if (i != 999) {
+            if (gp.keyH.enterPressed == true) {
                 attackCanceled = true;
-                gp.gameState = gp.dialogueState;
                 gp.npc[gp.currentMap][i].speak();
             }
+            gp.npc[gp.currentMap][i].move(direction);
         }
-
     }
 
     public void contactMonster(int i) {
@@ -412,15 +448,15 @@ public class Player extends Entity {
             attack = getAttack();
             defense = getDefense();
             gp.playSE(8);
-            gp.gameState = gp.dialogueState;
-            gp.ui.currentDialogue = "You are level " + level + " now!\nYou even feel stronger" ;
+            setDialogue();
+            startDialogue(this,0);
         }
     }
     public void selectItem(){
         int itemIndex = gp.ui.getItemIndexOnSlot(gp.ui.playerSlotCol,gp.ui.playerSlotRow);
         if(itemIndex < inventory.size()){
             Entity selectedItem = inventory.get(itemIndex);
-            if(selectedItem.type == type_sword || selectedItem.type == type_axe){
+            if(selectedItem.type == type_sword || selectedItem.type == type_axe || selectedItem.type == type_pickaxe){
                 currentWeapon = selectedItem;
                 attack = getAttack();
                 getAttackImage();
@@ -462,23 +498,24 @@ public class Player extends Entity {
     }
     public boolean canObtainItem(Entity item){
         boolean canObtain = false;
+        Entity newItem = gp.eGenerator.getObject(item.name);
         ///check stackable
-        if(item.stackable == true ){
-            int index = searchItemInInventory(item.name);
+        if(newItem.stackable == true ){
+            int index = searchItemInInventory(newItem.name);
             if(index != 999){
                 inventory.get(index).amount++;
                 canObtain = true;
             }
             else { // New item
                 if(inventory.size() != inventorySize){
-                    inventory.add(item);
+                    inventory.add(newItem);
                     canObtain = true;
                 }
             }
         }
         else{////not stackable
             if(inventory.size() != inventorySize){
-                inventory.add(item);
+                inventory.add(newItem);
                 canObtain = true;
             }
         }
@@ -583,7 +620,9 @@ public class Player extends Entity {
         if(transparent == true){
             changeAlpha(g2,0.3f);
         }
-        g2.drawImage(image, tempScreenX, tempScreenY, null);
+        if(drawing == true) {
+            g2.drawImage(image, tempScreenX, tempScreenY, null);
+        }
         ///reset alpha
         changeAlpha(g2,1f);
     }

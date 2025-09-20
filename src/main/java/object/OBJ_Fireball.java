@@ -8,15 +8,15 @@ import java.awt.*;
 
 public class OBJ_Fireball extends Projectile {
     GamePanel gp;
-
+    public static final String objName = "Fireball";
     public OBJ_Fireball(GamePanel gp) {
         super(gp);
         this.gp = gp;
-        name = "Fireball";
+        name = objName;
         speed = 8;
         knockBackPower = 5;
         maxLife = 80;
-        attack = 2;
+        attack = 1;
         useCost = 1;
         alive = false;
         getImage();

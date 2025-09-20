@@ -1,10 +1,12 @@
 package org.example.Main;
 
+import data.Progress;
 import entity.Entity;
 
 public class EventHandler {
     GamePanel gp;
     EventRect eventRect[][][];
+    Entity eventMaster;
 
     int previousEventX, previousEventY;
     boolean canTouchEvent = true;
@@ -13,6 +15,7 @@ public class EventHandler {
     public EventHandler(GamePanel gp) {
         this.gp = gp;
 
+        eventMaster = new Entity(gp);
         eventRect = new EventRect[gp.maxMap][gp.maxWorldCol][gp.maxWorldRow];
         int map = 0;
         int col=0, row=0;
@@ -35,8 +38,13 @@ public class EventHandler {
                 }
             }
         }
+        setDialogue();
     }
-
+    public void setDialogue(){
+        eventMaster.dialogues[0][0] = "You fell into the pit and sprained your ankle!";
+        eventMaster.dialogues[1][0] = "You drank the water from the lake.\nYour life and mana have been recovered.\n"
+                                            + "(Your progress has been saved)";
+    }
     public void checkEvent(){
         //check if player one tile away from last event
         int xDistance = Math.abs(gp.player.worldX - previousEventX);
@@ -50,9 +58,16 @@ public class EventHandler {
             if(hit(0,27, 16, "right") == true){damagePit(gp.dialogueState);}
             //if(hit(27,16,"right") == true){teleport(27,16,gp.dialogueState);}
             else if(hit(0,23, 12, "up") == true){healingPool(gp.dialogueState);}
-            else if(hit(0,10,39,"any") == true){teleport(1,12,13);}
-            else if(hit(1,12,13,"any") == true){teleport(0,10,39);}
-            else if(hit(1,12,9,"up") == true){speak(gp.npc[1][0]);}
+            else if(hit(0,10,39,"any") == true){teleport(1,24,26,gp.indoor);}
+            else if(hit(1,24,27,"any") == true){teleport(0,10,39,gp.outside);}
+            else if(hit(1,24,23,"up") == true){speak(gp.npc[1][0]);}
+
+            ///dungeon
+            else if(hit(0,12,9,"any") == true){teleport(2,9,41,gp.dungeon);}///enter
+            else if(hit(2,9,41,"any") == true){teleport(0,12,9,gp.outside);}///exit
+            else if(hit(2,8,7,"any") == true){teleport(3,26,41,gp.dungeon);}///enter b2
+            else if(hit(3,26,41,"any") == true){teleport(2,8,7,gp.dungeon);}///exit b2
+            else if(hit(3,25,27,"any") == true){skeletonLord();}///BOSS
         }
     }
     public boolean hit(int map,int col,int row, String reqDirection){
@@ -83,7 +98,7 @@ public class EventHandler {
     public void damagePit(int gameState){
         gp.gameState = gameState;
         gp.playSE(6);
-        gp.ui.currentDialogue = "You fell into the pit and sprained your ankle!";
+        eventMaster.startDialogue(eventMaster,0);
         gp.player.life -= 1;
         ///eventRect[col][row].eventDone = true;
         canTouchEvent = false;
@@ -94,16 +109,16 @@ public class EventHandler {
             gp.gameState = gameState;
             gp.player.attackCanceled = true;
             gp.playSE(2);
-            gp.ui.currentDialogue = "You drank the water from the lake.\nYour life and mana have been recovered.\n"
-                                        + "(Your progress has been saved)";
+            eventMaster.startDialogue(eventMaster,1);
             gp.player.life = gp.player.maxLife;
             gp.player.mana = gp.player.maxMana;
             gp.aSetter.setMonster();
             gp.saveLoad.save();
         }
     }
-    public void teleport(int map, int col, int row){
+    public void teleport(int map, int col, int row, int area){
         gp.gameState = gp.transitionState;
+        gp.nextArea = area;
         tempMap = map;
         tempCol = col;
         tempRow = row;
@@ -116,6 +131,12 @@ public class EventHandler {
             gp.gameState = gp.dialogueState;
             gp.player.attackCanceled = true;
             entity.speak();
+        }
+    }
+    public void skeletonLord(){
+        if(gp.bossBattleOn == false && Progress.skeletonLordDefeated == false){
+            gp.gameState = gp.cutsceneState;
+            gp.csManager.sceneNum = gp.csManager.skeletonLord;
         }
     }
 }

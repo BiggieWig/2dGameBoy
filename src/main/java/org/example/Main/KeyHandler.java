@@ -9,6 +9,7 @@ public class KeyHandler implements KeyListener {
     GamePanel gp;
     ///debug
     boolean showDebugText = false;
+    public boolean godModeOn = false;
 
     public KeyHandler(GamePanel gp) {
         this.gp = gp;
@@ -34,7 +35,7 @@ public class KeyHandler implements KeyListener {
            pauseState(code);
         }
         ///dialogue
-        else if(gp.gameState == gp.dialogueState) {
+        else if(gp.gameState == gp.dialogueState || gp.gameState == gp.cutsceneState) {
             dialogueState(code);
         }
         ///character
@@ -80,6 +81,7 @@ public class KeyHandler implements KeyListener {
                 if(gp.ui.commandNumber == 1){
                     gp.saveLoad.load();
                     gp.gameState = gp.playState;
+                    gp.playMusic(18);
                 }
                 if(gp.ui.commandNumber == 2){
                     System.exit(0);
@@ -176,10 +178,19 @@ public class KeyHandler implements KeyListener {
                 System.out.println("Failed to reload map: " + e.getMessage());
             }
         }
+        ///god mode
+        if(code == KeyEvent.VK_G){
+            if(godModeOn == false){
+                godModeOn = true;
+            }
+            else if(godModeOn == true){
+                godModeOn = false;
+            }
+        }
     }
     public void dialogueState(int code){
         if(code == KeyEvent.VK_ENTER) {
-            gp.gameState = gp.playState;
+            enterPressed = true;
         }
     }
     public void pauseState(int code){

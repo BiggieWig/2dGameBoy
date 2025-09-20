@@ -12,7 +12,6 @@ import java.util.Random;
 public class MON_Orc extends Entity {
     GamePanel gp;
 
-
     public MON_Orc(GamePanel gp) {
         super(gp);
         this.gp = gp;
@@ -74,7 +73,7 @@ public class MON_Orc extends Entity {
             ///check chase or no
             checkStartChasingOrNot(gp.player,5,100);
             ///get random direction if not chasing
-            getRandomDirection();
+            getRandomDirection(120);
         }
         if(attacking == false){
             checkAttackOrNot(30,gp.tileSize*4,gp.tileSize);

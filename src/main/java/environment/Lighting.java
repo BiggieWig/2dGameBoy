@@ -30,7 +30,7 @@ public class Lighting {
         darknessFilter = new BufferedImage(gp.screenWidth,gp.screenHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = (Graphics2D)darknessFilter.getGraphics();
         if(gp.player.currentLight == null){
-            g2.setColor(new Color(0,0,0,0.90f));
+            g2.setColor(new Color(0,0,0,0.96f));
         }
         else {
             ///get center X and Y of the circle
@@ -43,7 +43,7 @@ public class Lighting {
             color[1] = new Color(0, 0, 0, 0.25f);
             color[2] = new Color(0, 0, 0, 0.5f);
             color[3] = new Color(0, 0, 0, 0.75f);
-            color[4] = new Color(0, 0, 0, 0.90f);
+            color[4] = new Color(0, 0, 0, 0.96f);
 
             fraction[0] = 0f;
             fraction[1] = 0.25f;
@@ -101,9 +101,14 @@ public class Lighting {
         }
     }
     public void draw(Graphics2D g2){
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, filterAlpha));
-        g2.drawImage(darknessFilter,0,0,null);
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1));
+
+        if(gp.currentArea == gp.outside) {
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, filterAlpha));
+        }
+        if(gp.currentArea == gp.outside || gp.currentArea == gp.dungeon) {
+            g2.drawImage(darknessFilter, 0, 0, null);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1));
+        }
 
         ///debug
         String situation = "";
@@ -116,6 +121,8 @@ public class Lighting {
         }
         g2.setColor(Color.white);
         g2.setFont(g2.getFont().deriveFont(50f));
-        g2.drawString(situation,800,500);
+        if(gp.currentArea == gp.outside) {
+            g2.drawString(situation, 800, 500);
+        }
     }
 }

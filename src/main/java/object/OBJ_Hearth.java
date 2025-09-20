@@ -8,11 +8,11 @@ import java.io.IOException;
 
 public class OBJ_Hearth extends Entity {
     GamePanel gp;
-
+    public static final String objName = "Heart";
     public OBJ_Hearth(GamePanel gp){
         super(gp);
         this.gp = gp;
-        name = "Heart";
+        name = objName;
         type = type_pickupOnly;
         value = 2;
         down1 = setup("/objects/heart_full",gp.tileSize,gp.tileSize);
