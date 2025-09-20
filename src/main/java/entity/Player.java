@@ -47,14 +47,14 @@ public class Player extends Entity {
         level = 1;
         maxLife = 8;
         life = maxLife;
-        maxMana = 5;
+        maxMana = 4;
         mana = maxMana;
         ammo = 5;
         strength = 1;
         dexterity = 1;
         exp = 0;
         nextLevelExp = 5;
-        coin = 500;
+        coin = 50;
         currentWeapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
         currentLight = null;
@@ -93,9 +93,6 @@ public class Player extends Entity {
         inventory.clear();
         inventory.add(currentWeapon);
         inventory.add(currentShield);
-        inventory.add(new OBJ_Axe(gp));
-        inventory.add(new OBJ_Key(gp));
-        inventory.add(new OBJ_Lantern(gp));
     }
     public int getAttack(){
         attackArea = currentWeapon.attackArea;
@@ -444,6 +441,9 @@ public class Player extends Entity {
             level++;
             nextLevelExp = nextLevelExp*2;
             maxLife += 2;
+            if(level % 2 == 0){
+                maxMana += 1;
+            }
             strength++;dexterity++;
             attack = getAttack();
             defense = getDefense();
